@@ -20,8 +20,23 @@ const DB_FILE = './weather-data.json';
 async function initDatabase() {
     try {
         await fs.access(DB_FILE);
+        // File exists, check if it's valid
+        const data = await fs.readFile(DB_FILE, 'utf8');
+        if (!data || data.trim() === '') {
+            // File is empty, initialize with empty array
+            await fs.writeFile(DB_FILE, JSON.stringify([]));
+        } else {
+            // Try to parse, if it fails, reinitialize
+            try {
+                JSON.parse(data);
+            } catch (parseError) {
+                console.warn('Invalid JSON in database file, reinitializing...');
+                await fs.writeFile(DB_FILE, JSON.stringify([]));
+            }
+        }
     } catch (error) {
         // File doesn't exist, create it with empty array
+        console.log('Creating new database file...');
         await fs.writeFile(DB_FILE, JSON.stringify([]));
     }
 }
@@ -30,15 +45,30 @@ async function initDatabase() {
 async function readData() {
     try {
         const data = await fs.readFile(DB_FILE, 'utf8');
-        return JSON.parse(data);
+        // Check if data is empty or invalid
+        if (!data || data.trim() === '') {
+            return [];
+        }
+        const parsedData = JSON.parse(data);
+        // Ensure it's an array
+        return Array.isArray(parsedData) ? parsedData : [];
     } catch (error) {
+        console.error('Error reading data from file:', error);
+        // Return empty array as fallback
         return [];
     }
 }
 
 // Write data to file
 async function writeData(data) {
-    await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
+    try {
+        // Ensure data is an array
+        const dataArray = Array.isArray(data) ? data : [];
+        await fs.writeFile(DB_FILE, JSON.stringify(dataArray, null, 2));
+    } catch (error) {
+        console.error('Error writing data to file:', error);
+        throw error; // Re-throw to be handled by caller
+    }
 }
 
 // Routes
@@ -48,10 +78,12 @@ app.get('/api/weather', async (req, res) => {
     try {
         const weatherData = await readData();
         // Sort by date descending
-        weatherData.sort((a, b) => new Date(b.date) - new Date(a.date));
-        res.json(weatherData);
+        const sortedData = Array.isArray(weatherData) ? [...weatherData] : [];
+        sortedData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        res.json(sortedData);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error fetching weather data:', error);
+        res.status(500).json({ error: 'Failed to fetch weather data: ' + error.message });
     }
 });
 
@@ -133,6 +165,12 @@ app.get('/', (req, res) => {
 // Initialize database
 initDatabase().catch(error => {
     console.error('Failed to initialize database:', error);
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
 // Vercel requires us to export the app
