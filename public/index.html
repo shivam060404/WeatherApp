@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - Shivam Kumar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Weather App</h1>
+        <h2>By Shivam Kumar</h2>
+        <button id="infoButton">Info</button>
+    </header>
+
+    <main>
+        <div class="location-input">
+            <input type="text" id="locationInput" placeholder="Enter location (city, zip code, coordinates...)">
+            <button id="getWeatherBtn">Get Weather</button>
+            <button id="getCurrentLocationBtn">Use My Location</button>
+        </div>
+
+        <div id="weatherDisplay" class="weather-display">
+            <!-- Weather data will be displayed here -->
+        </div>
+
+        <div id="forecastDisplay" class="forecast-display">
+            <!-- 5-day forecast will be displayed here -->
+        </div>
+
+        <div id="savedWeather" class="saved-weather">
+            <h3>Saved Weather Data</h3>
+            <div id="savedWeatherList">
+                <!-- Saved weather data will be displayed here -->
+            </div>
+        </div>
+    </main>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>About PM Accelerator</h2>
+            <p>PM Accelerator is a company that provides innovative solutions for project management and business acceleration. We help businesses streamline their processes and achieve their goals faster through cutting-edge technology and strategic consulting.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
