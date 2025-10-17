@@ -5,42 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App - Shivam Kumar</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>Weather App</h1>
-        <h2>By Shivam Kumar</h2>
-        <button id="infoButton">Info</button>
-    </header>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cloud-sun"></i> Weather App</h1>
+            <h2>By Shivam Kumar</h2>
+            <button id="infoButton"><i class="fas fa-info-circle"></i> Info</button>
+        </header>
 
-    <main>
-        <div class="location-input">
-            <input type="text" id="locationInput" placeholder="Enter location (city, zip code, coordinates...)">
-            <button id="getWeatherBtn">Get Weather</button>
-            <button id="getCurrentLocationBtn">Use My Location</button>
-        </div>
-
-        <div id="weatherDisplay" class="weather-display">
-            <!-- Weather data will be displayed here -->
-        </div>
-
-        <div id="forecastDisplay" class="forecast-display">
-            <!-- 5-day forecast will be displayed here -->
-        </div>
-
-        <div id="savedWeather" class="saved-weather">
-            <h3>Saved Weather Data</h3>
-            <div id="savedWeatherList">
-                <!-- Saved weather data will be displayed here -->
+        <main>
+            <div class="location-input">
+                <input type="text" id="locationInput" placeholder="Enter location (city, zip code, coordinates...)">
+                <button id="getWeatherBtn"><i class="fas fa-search"></i> Get Weather</button>
+                <button id="getCurrentLocationBtn"><i class="fas fa-location-arrow"></i> Use My Location</button>
             </div>
-        </div>
-    </main>
 
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>About PM Accelerator</h2>
-            <p>PM Accelerator is a company that provides innovative solutions for project management and business acceleration. We help businesses streamline their processes and achieve their goals faster through cutting-edge technology and strategic consulting.</p>
+            <div id="weatherDisplay" class="weather-display">
+                <!-- Weather data will be displayed here -->
+                <div class="placeholder-content">
+                    <i class="fas fa-cloud fa-3x" style="color: #4361ee; margin-bottom: 20px;"></i>
+                    <h3>Enter a location to get weather information</h3>
+                    <p>Try entering a city name, zip code, or coordinates</p>
+                </div>
+            </div>
+
+            <div id="forecastDisplay" class="forecast-display">
+                <!-- 5-day forecast will be displayed here -->
+                <div class="placeholder-content">
+                    <i class="fas fa-calendar-alt fa-3x" style="color: #4361ee; margin-bottom: 20px;"></i>
+                    <h3>5-Day Forecast</h3>
+                    <p>Forecast data will appear here after searching for a location</p>
+                </div>
+            </div>
+
+            <div id="savedWeather" class="saved-weather">
+                <h3><i class="fas fa-save"></i> Saved Weather Data</h3>
+                <div id="savedWeatherList" class="saved-weather-list">
+                    <!-- Saved weather data will be displayed here -->
+                    <div class="placeholder-content" style="grid-column: 1 / -1; text-align: center; padding: 30px;">
+                        <i class="fas fa-database fa-3x" style="color: #4361ee; margin-bottom: 20px;"></i>
+                        <h3>No saved weather data</h3>
+                        <p>Search for locations and they will be saved here</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2><i class="fas fa-info-circle"></i> About PM Accelerator</h2>
+                <p>PM Accelerator is a company that provides innovative solutions for project management and business acceleration. We help businesses streamline their processes and achieve their goals faster through cutting-edge technology and strategic consulting.</p>
+                <p style="margin-top: 20px; font-style: italic;">"Empowering businesses with technology-driven solutions for accelerated growth."</p>
+            </div>
         </div>
     </div>
 

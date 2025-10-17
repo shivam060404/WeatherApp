@@ -14,15 +14,49 @@ const infoButton = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
 const closeModal = document.querySelector('.close');
 
+// Add animation classes when elements are loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Add fade-in animation to main elements
+    const elements = document.querySelectorAll('header, .location-input, .weather-display, .forecast-display, .saved-weather');
+    elements.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 50);
+        }, index * 100);
+    });
+    
+    loadSavedWeather();
+});
+
 // Event Listeners
 getWeatherBtn.addEventListener('click', () => {
     const location = locationInput.value.trim();
     if (location) {
+        // Add animation to button
+        getWeatherBtn.classList.add('pulse-animation');
+        setTimeout(() => {
+            getWeatherBtn.classList.remove('pulse-animation');
+        }, 1000);
+        
         getWeatherData(location);
+    } else {
+        showError('Please enter a location');
     }
 });
 
 getCurrentLocationBtn.addEventListener('click', () => {
+    // Add animation to button
+    getCurrentLocationBtn.classList.add('pulse-animation');
+    setTimeout(() => {
+        getCurrentLocationBtn.classList.remove('pulse-animation');
+    }, 1000);
+    
     if (!navigator.geolocation) {
         showError('Geolocation is not supported by this browser.');
         return;
@@ -71,6 +105,9 @@ getCurrentLocationBtn.addEventListener('click', () => {
 
 infoButton.addEventListener('click', () => {
     infoModal.style.display = 'block';
+    // Add animation to modal
+    const modalContent = infoModal.querySelector('.modal-content');
+    modalContent.style.animation = 'fadeInUp 0.5s ease-out';
 });
 
 closeModal.addEventListener('click', () => {
@@ -175,20 +212,41 @@ async function getWeatherData(location) {
 
 function displayCurrentWeather(data) {
     const weatherHtml = `
-        <h2>${data.name}, ${data.sys.country}</h2>
-        <div class="weather-icon">
-            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="${data.weather[0].description}">
-        </div>
-        <p class="temperature">${Math.round(data.main.temp)}°C</p>
-        <p class="description">${data.weather[0].description}</p>
-        <div class="details">
-            <p>Feels like: ${Math.round(data.main.feels_like)}°C</p>
-            <p>Humidity: ${data.main.humidity}%</p>
-            <p>Wind Speed: ${data.wind.speed} m/s</p>
+        <div class="current-weather">
+            <h2 class="city-name">${data.name}, ${data.sys.country}</h2>
+            <div class="weather-icon-main">
+                <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="${data.weather[0].description}">
+            </div>
+            <p class="temperature">${Math.round(data.main.temp)}°C</p>
+            <p class="description">${data.weather[0].description}</p>
+            <div class="weather-details">
+                <div class="detail-card">
+                    <p class="detail-value">${Math.round(data.main.feels_like)}°C</p>
+                    <p class="detail-label">Feels Like</p>
+                </div>
+                <div class="detail-card">
+                    <p class="detail-value">${data.main.humidity}%</p>
+                    <p class="detail-label">Humidity</p>
+                </div>
+                <div class="detail-card">
+                    <p class="detail-value">${data.wind.speed} m/s</p>
+                    <p class="detail-label">Wind Speed</p>
+                </div>
+                <div class="detail-card">
+                    <p class="detail-value">${data.main.pressure} hPa</p>
+                    <p class="detail-label">Pressure</p>
+                </div>
+            </div>
         </div>
     `;
     
     weatherDisplay.innerHTML = weatherHtml;
+    
+    // Add animation to weather display
+    weatherDisplay.classList.add('fade-in-up');
+    setTimeout(() => {
+        weatherDisplay.classList.remove('fade-in-up');
+    }, 1000);
 }
 
 function displayForecast(data) {
@@ -204,34 +262,40 @@ function displayForecast(data) {
     // Get first 5 days
     const dates = Object.keys(dailyForecasts).slice(0, 5);
     
-    let forecastHtml = '<h3>5-Day Forecast</h3><div class="forecast-container">';
-    dates.forEach(date => {
+    let forecastHtml = '<h3><i class="fas fa-calendar-alt"></i> 5-Day Forecast</h3><div class="forecast-container">';
+    dates.forEach((date, index) => {
         const item = dailyForecasts[date];
         const day = new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' });
         forecastHtml += `
-            <div class="forecast-item">
-                <p><strong>${day}</strong></p>
+            <div class="forecast-item" style="animation-delay: ${index * 0.1}s">
+                <p class="forecast-day"><i class="fas fa-calendar-day"></i> ${day}</p>
                 <div class="weather-icon">
-                    <img src="https://openweathermap.org/img/wn/${item.weather[0].icon}.png" alt="${item.weather[0].description}">
+                    <img src="https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png" alt="${item.weather[0].description}">
                 </div>
-                <p>${Math.round(item.main.temp)}°C</p>
-                <p>${item.weather[0].description}</p>
+                <p class="forecast-temp">${Math.round(item.main.temp)}°C</p>
+                <p class="forecast-desc">${item.weather[0].description}</p>
             </div>
         `;
     });
     forecastHtml += '</div>';
     
     forecastDisplay.innerHTML = forecastHtml;
+    
+    // Add animation to forecast display
+    forecastDisplay.classList.add('fade-in-up');
+    setTimeout(() => {
+        forecastDisplay.classList.remove('fade-in-up');
+    }, 1000);
 }
 
 // UI Helper Functions
 function showLoading() {
-    weatherDisplay.innerHTML = '<div class="loading">Loading weather data...</div>';
-    forecastDisplay.innerHTML = '';
+    weatherDisplay.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading weather data...</div>';
+    forecastDisplay.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading forecast data...</div>';
 }
 
 function showError(message) {
-    weatherDisplay.innerHTML = `<div class="error">${message}</div>`;
+    weatherDisplay.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
     forecastDisplay.innerHTML = '';
 }
 
@@ -286,6 +350,7 @@ async function loadSavedWeather() {
         displaySavedWeather(weatherData);
     } catch (error) {
         console.error('Error loading saved weather data:', error);
+        savedWeatherList.innerHTML = '<div class="error">Error loading saved weather data</div>';
     }
 }
 
@@ -308,10 +373,15 @@ async function updateWeatherData(id, updates) {
         loadSavedWeather(); // Refresh the saved weather list
     } catch (error) {
         console.error('Error updating weather data:', error);
+        alert('Error updating weather data: ' + error.message);
     }
 }
 
 async function deleteWeatherData(id) {
+    if (!confirm('Are you sure you want to delete this weather data?')) {
+        return;
+    }
+    
     try {
         const response = await fetch(`${API_BASE_URL}/weather/${id}`, {
             method: 'DELETE'
@@ -325,26 +395,35 @@ async function deleteWeatherData(id) {
         loadSavedWeather(); // Refresh the saved weather list
     } catch (error) {
         console.error('Error deleting weather data:', error);
+        alert('Error deleting weather data: ' + error.message);
     }
 }
 
 // Function to display saved weather data
 function displaySavedWeather(weatherData) {
     if (!weatherData || weatherData.length === 0) {
-        savedWeatherList.innerHTML = '<p>No saved weather data found.</p>';
+        savedWeatherList.innerHTML = `
+            <div class="placeholder-content" style="grid-column: 1 / -1; text-align: center; padding: 30px;">
+                <i class="fas fa-database fa-3x" style="color: #4361ee; margin-bottom: 20px;"></i>
+                <h3>No saved weather data</h3>
+                <p>Search for locations and they will be saved here</p>
+            </div>
+        `;
         return;
     }
 
     let html = '';
-    weatherData.forEach(item => {
+    weatherData.forEach((item, index) => {
         html += `
-            <div class="saved-weather-item" data-id="${item._id}">
-                <h4>${item.location}, ${item.country}</h4>
-                <p>Temperature: ${item.temperature}°C</p>
-                <p>Description: ${item.description}</p>
-                <p>Date: ${new Date(item.date).toLocaleString()}</p>
-                <button class="update-btn" onclick="editWeatherData('${item._id}')">Edit</button>
-                <button class="delete-btn" onclick="deleteWeatherData('${item._id}')">Delete</button>
+            <div class="saved-weather-item" data-id="${item._id}" style="animation-delay: ${index * 0.1}s">
+                <h4 class="saved-location"><i class="fas fa-map-marker-alt"></i> ${item.location}, ${item.country}</h4>
+                <p class="saved-temp"><i class="fas fa-thermometer-half"></i> ${item.temperature}°C</p>
+                <p class="saved-desc"><i class="fas fa-cloud"></i> ${item.description}</p>
+                <p class="saved-date"><i class="far fa-clock"></i> ${new Date(item.date).toLocaleString()}</p>
+                <div class="action-buttons">
+                    <button class="update-btn" onclick="editWeatherData('${item._id}')"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="delete-btn" onclick="deleteWeatherData('${item._id}')"><i class="fas fa-trash"></i> Delete</button>
+                </div>
             </div>
         `;
     });
@@ -355,12 +434,33 @@ function displaySavedWeather(weatherData) {
 // Function to edit weather data
 function editWeatherData(id) {
     const newDescription = prompt('Enter new description:');
-    if (newDescription !== null) {
-        updateWeatherData(id, { description: newDescription });
+    if (newDescription !== null && newDescription.trim() !== '') {
+        updateWeatherData(id, { description: newDescription.trim() });
     }
 }
 
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-    loadSavedWeather();
-});
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse-animation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .pulse-animation {
+        animation: pulse-animation 0.5s ease-in-out;
+    }
+    
+    .placeholder-content {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .placeholder-content h3 {
+        margin: 15px 0;
+        color: #495057;
+    }
+`;
+document.head.appendChild(style);
