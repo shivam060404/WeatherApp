@@ -12,7 +12,7 @@ A full-stack weather application with real-time weather data retrieval and CRUD 
 - 5-day weather forecast
 
 ### Assessment 2: Advanced Features & Persistence
-- MongoDB database integration
+- File-based data persistence (for Vercel deployment)
 - CRUD operations for weather data
 - Data persistence for previously searched locations
 - Update and delete functionality for saved data
@@ -25,10 +25,8 @@ A full-stack weather application with real-time weather data retrieval and CRUD 
    npm install
    ```
 3. Set up your environment variables in `.env`:
-   - `WEATHER_API_KEY`: Your OpenWeatherMap API key (current key: 53d150c03e4220f4e1e1ce537117ee5a)
-   - `MONGODB_URI`: Your MongoDB connection string (default: mongodb://localhost:27017/weatherapp)
-4. Make sure MongoDB is running on your system
-5. Start the application:
+   - `WEATHER_API_KEY`: Your OpenWeatherMap API key
+4. Start the application:
    ```
    npm start
    ```
@@ -36,6 +34,22 @@ A full-stack weather application with real-time weather data retrieval and CRUD 
    ```
    npm run dev
    ```
+
+## Deployment to Vercel
+
+This application can be deployed to Vercel for free. Follow these steps:
+
+1. Sign up for a free account at [vercel.com](https://vercel.com)
+2. Install Vercel CLI: `npm install -g vercel`
+3. Run `vercel` in the project directory
+4. Follow the prompts to deploy
+
+### Vercel Configuration
+
+The project includes:
+- `vercel.json`: Configuration for Vercel deployment
+- `api/`: Serverless functions for CRUD operations
+- File-based storage instead of MongoDB for Vercel compatibility
 
 ## API Endpoints
 
@@ -49,24 +63,8 @@ A full-stack weather application with real-time weather data retrieval and CRUD 
 
 - Frontend: HTML, CSS, JavaScript
 - Backend: Node.js, Express
-- Database: MongoDB with Mongoose
+- Data Storage: File-based JSON storage (Vercel compatible)
 - Weather API: OpenWeatherMap
-
-## Testing
-
-To test the CRUD operations, run:
-```
-node test-crud.js
-```
-
-To test the Weather API key, run:
-```
-node test-weather-api.js
-```
-
-## Note on API Key
-
-The application includes error handling for invalid API keys. If the provided key is invalid, the application will display mock data for demonstration purposes while maintaining full CRUD functionality with the database.
 
 ## Author
 

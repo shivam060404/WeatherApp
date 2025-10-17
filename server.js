@@ -1,77 +1,54 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs').promises;
+const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
+// Create Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/weatherapp';
+// Simple file-based storage
+const DB_FILE = './weather-data.json';
 
-const connectDB = async () => {
+// Initialize database file if it doesn't exist
+async function initDatabase() {
     try {
-        await mongoose.connect(MONGODB_URI);
-        console.log('Connected to MongoDB');
+        await fs.access(DB_FILE);
     } catch (error) {
-        console.error('MongoDB connection error:', error);
-        console.log('Retrying connection in 5 seconds...');
-        setTimeout(connectDB, 5000);
+        // File doesn't exist, create it with empty array
+        await fs.writeFile(DB_FILE, JSON.stringify([]));
     }
-};
+}
 
-// Initial connection attempt
-connectDB();
+// Read data from file
+async function readData() {
+    try {
+        const data = await fs.readFile(DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        return [];
+    }
+}
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-    console.log('Connected to MongoDB');
-});
-
-// Weather data schema
-const weatherSchema = new mongoose.Schema({
-    location: {
-        type: String,
-        required: true
-    },
-    country: String,
-    temperature: Number,
-    feelsLike: Number,
-    humidity: Number,
-    windSpeed: Number,
-    description: String,
-    icon: String,
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    dateRange: {
-        startDate: Date,
-        endDate: Date
-    },
-    forecast: [{
-        date: Date,
-        temperature: Number,
-        description: String,
-        icon: String
-    }]
-});
-
-const Weather = mongoose.model('Weather', weatherSchema);
+// Write data to file
+async function writeData(data) {
+    await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2));
+}
 
 // Routes
 
 // GET all weather data
 app.get('/api/weather', async (req, res) => {
     try {
-        const weatherData = await Weather.find().sort({ date: -1 });
+        const weatherData = await readData();
+        // Sort by date descending
+        weatherData.sort((a, b) => new Date(b.date) - new Date(a.date));
         res.json(weatherData);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -81,7 +58,8 @@ app.get('/api/weather', async (req, res) => {
 // GET weather by ID
 app.get('/api/weather/:id', async (req, res) => {
     try {
-        const weather = await Weather.findById(req.params.id);
+        const weatherData = await readData();
+        const weather = weatherData.find(item => item._id === req.params.id);
         if (!weather) {
             return res.status(404).json({ error: 'Weather data not found' });
         }
@@ -94,9 +72,15 @@ app.get('/api/weather/:id', async (req, res) => {
 // POST new weather data
 app.post('/api/weather', async (req, res) => {
     try {
-        const weather = new Weather(req.body);
-        await weather.save();
-        res.status(201).json(weather);
+        const weatherData = await readData();
+        const newWeather = {
+            _id: uuidv4(),
+            ...req.body,
+            date: new Date()
+        };
+        weatherData.push(newWeather);
+        await writeData(weatherData);
+        res.status(201).json(newWeather);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -105,15 +89,20 @@ app.post('/api/weather', async (req, res) => {
 // PUT (update) weather data
 app.put('/api/weather/:id', async (req, res) => {
     try {
-        const weather = await Weather.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        if (!weather) {
+        const weatherData = await readData();
+        const index = weatherData.findIndex(item => item._id === req.params.id);
+        if (index === -1) {
             return res.status(404).json({ error: 'Weather data not found' });
         }
-        res.json(weather);
+        
+        weatherData[index] = {
+            ...weatherData[index],
+            ...req.body,
+            _id: req.params.id // Preserve the original ID
+        };
+        
+        await writeData(weatherData);
+        res.json(weatherData[index]);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -122,11 +111,15 @@ app.put('/api/weather/:id', async (req, res) => {
 // DELETE weather data
 app.delete('/api/weather/:id', async (req, res) => {
     try {
-        const weather = await Weather.findByIdAndDelete(req.params.id);
-        if (!weather) {
+        const weatherData = await readData();
+        const index = weatherData.findIndex(item => item._id === req.params.id);
+        if (index === -1) {
             return res.status(404).json({ error: 'Weather data not found' });
         }
-        res.json({ message: 'Weather data deleted successfully' });
+        
+        const deletedItem = weatherData.splice(index, 1)[0];
+        await writeData(weatherData);
+        res.json({ message: 'Weather data deleted successfully', deletedItem });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -137,7 +130,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Initialize database
+initDatabase().catch(error => {
+    console.error('Failed to initialize database:', error);
 });
+
+// Vercel requires us to export the app
+module.exports = app;
